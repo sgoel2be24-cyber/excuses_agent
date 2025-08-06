@@ -26,22 +26,21 @@ app.post('/api/generate-excuse', async (req, res) => {
       return res.status(400).json({ error: 'Problem description is required' });
     }
 
-    const prompt = `Generate a professional and believable excuse for the following situation. Make it sound genuine and professional, but also slightly humorous. Keep it under 100 words:
-
-Situation: ${problem}
-
-Professional Excuse:`;
-
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: "You are a professional excuse generator. Create believable, professional excuses that are slightly humorous but still appropriate for workplace situations."
+          content: `#Overview
+You are an smart AI excuse generator. Your job is to create a clever, clear and creative excuses that someone can use to avoid the situation they are in.
+
+##Output
+-only return the excuse
+-Add a touch of humour in it.`
         },
         {
           role: "user",
-          content: prompt
+          content: problem
         }
       ],
       max_tokens: 150,
