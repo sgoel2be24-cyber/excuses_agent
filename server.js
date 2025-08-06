@@ -33,7 +33,7 @@ app.post('/api/generate-excuse', async (req, res) => {
         'X-Title': 'Excuses App'
       },
       body: JSON.stringify({
-        model: "google/gemini-1.5-flash:free",
+        model: "google/gemma-3-27b-it:free",
         messages: [
           {
             role: "system",
@@ -103,7 +103,7 @@ app.get('/test-openrouter', async (req, res) => {
         'X-Title': 'Excuses App'
       },
       body: JSON.stringify({
-        model: "google/gemini-1.5-flash:free",
+        model: "google/gemma-3-27b-it:free",
         messages: [
           {
             role: "user",
@@ -129,7 +129,7 @@ app.get('/test-openrouter', async (req, res) => {
       success: true, 
       message: testResponse,
       apiKeyStatus: process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing',
-      model: 'google/gemini-1.5-flash:free'
+      model: 'google/gemma-3-27b-it:free'
     });
   } catch (error) {
     console.error('OpenRouter Test Error:', error);
@@ -137,7 +137,7 @@ app.get('/test-openrouter', async (req, res) => {
       success: false, 
       error: error.message,
       apiKeyStatus: process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing',
-      model: 'google/gemini-1.5-flash:free'
+      model: 'google/gemma-3-27b-it:free'
     });
   }
 });
@@ -147,5 +147,5 @@ app.listen(PORT, () => {
   console.log('Environment check:');
   console.log('- PORT:', process.env.PORT || 3000);
   console.log('- OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
-  console.log('- Using model: google/gemini-1.5-flash:free');
+  console.log('- Using model: google/gemma-3-27b-it:free');
 });
