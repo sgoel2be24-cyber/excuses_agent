@@ -1,127 +1,367 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const OpenAI = require('openai');
-require('dotenv').config();
+export {}; // Make this a module
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// #region Fetch and friends
+// Conditional type aliases, used at the end of this file.
+// Will either be empty if lib.dom (or lib.webworker) is included, or the undici version otherwise.
+type _Request = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").Request;
+type _Response = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").Response;
+type _FormData = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").FormData;
+type _Headers = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").Headers;
+type _MessageEvent = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").MessageEvent;
+type _RequestInit = typeof globalThis extends { onmessage: any } ? {}
+    : import("undici-types").RequestInit;
+type _ResponseInit = typeof globalThis extends { onmessage: any } ? {}
+    : import("undici-types").ResponseInit;
+type _WebSocket = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").WebSocket;
+type _EventSource = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").EventSource;
+type _CloseEvent = typeof globalThis extends { onmessage: any } ? {} : import("undici-types").CloseEvent;
+// #endregion Fetch and friends
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static('public'));
+// Conditional type definitions for webstorage interface, which conflicts with lib.dom otherwise.
+type _Storage = typeof globalThis extends { onabort: any } ? {} : {
+    readonly length: number;
+    clear(): void;
+    getItem(key: string): string | null;
+    key(index: number): string | null;
+    removeItem(key: string): void;
+    setItem(key: string, value: string): void;
+    [key: string]: any;
+};
 
-// Initialize OpenAI client for OpenRouter
-const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': 'https://excuses-app.com', // Optional: for analytics
-    'X-Title': 'Excuses App' // Optional: for analytics
-  }
-});
+// #region DOMException
+type _DOMException = typeof globalThis extends { onmessage: any } ? {} : NodeDOMException;
+interface NodeDOMException extends Error {
+    readonly code: number;
+    readonly message: string;
+    readonly name: string;
+    readonly INDEX_SIZE_ERR: 1;
+    readonly DOMSTRING_SIZE_ERR: 2;
+    readonly HIERARCHY_REQUEST_ERR: 3;
+    readonly WRONG_DOCUMENT_ERR: 4;
+    readonly INVALID_CHARACTER_ERR: 5;
+    readonly NO_DATA_ALLOWED_ERR: 6;
+    readonly NO_MODIFICATION_ALLOWED_ERR: 7;
+    readonly NOT_FOUND_ERR: 8;
+    readonly NOT_SUPPORTED_ERR: 9;
+    readonly INUSE_ATTRIBUTE_ERR: 10;
+    readonly INVALID_STATE_ERR: 11;
+    readonly SYNTAX_ERR: 12;
+    readonly INVALID_MODIFICATION_ERR: 13;
+    readonly NAMESPACE_ERR: 14;
+    readonly INVALID_ACCESS_ERR: 15;
+    readonly VALIDATION_ERR: 16;
+    readonly TYPE_MISMATCH_ERR: 17;
+    readonly SECURITY_ERR: 18;
+    readonly NETWORK_ERR: 19;
+    readonly ABORT_ERR: 20;
+    readonly URL_MISMATCH_ERR: 21;
+    readonly QUOTA_EXCEEDED_ERR: 22;
+    readonly TIMEOUT_ERR: 23;
+    readonly INVALID_NODE_TYPE_ERR: 24;
+    readonly DATA_CLONE_ERR: 25;
+}
+interface NodeDOMExceptionConstructor {
+    prototype: DOMException;
+    new(message?: string, nameOrOptions?: string | { name?: string; cause?: unknown }): DOMException;
+    readonly INDEX_SIZE_ERR: 1;
+    readonly DOMSTRING_SIZE_ERR: 2;
+    readonly HIERARCHY_REQUEST_ERR: 3;
+    readonly WRONG_DOCUMENT_ERR: 4;
+    readonly INVALID_CHARACTER_ERR: 5;
+    readonly NO_DATA_ALLOWED_ERR: 6;
+    readonly NO_MODIFICATION_ALLOWED_ERR: 7;
+    readonly NOT_FOUND_ERR: 8;
+    readonly NOT_SUPPORTED_ERR: 9;
+    readonly INUSE_ATTRIBUTE_ERR: 10;
+    readonly INVALID_STATE_ERR: 11;
+    readonly SYNTAX_ERR: 12;
+    readonly INVALID_MODIFICATION_ERR: 13;
+    readonly NAMESPACE_ERR: 14;
+    readonly INVALID_ACCESS_ERR: 15;
+    readonly VALIDATION_ERR: 16;
+    readonly TYPE_MISMATCH_ERR: 17;
+    readonly SECURITY_ERR: 18;
+    readonly NETWORK_ERR: 19;
+    readonly ABORT_ERR: 20;
+    readonly URL_MISMATCH_ERR: 21;
+    readonly QUOTA_EXCEEDED_ERR: 22;
+    readonly TIMEOUT_ERR: 23;
+    readonly INVALID_NODE_TYPE_ERR: 24;
+    readonly DATA_CLONE_ERR: 25;
+}
+// #endregion DOMException
 
-// Webhook endpoint for generating excuses
-app.post('/api/generate-excuse', async (req, res) => {
-  try {
-    const { problem } = req.body;
-    
-    if (!problem) {
-      return res.status(400).json({ error: 'Problem description is required' });
+declare global {
+    var global: typeof globalThis;
+
+    var process: NodeJS.Process;
+    var console: Console;
+
+    interface ErrorConstructor {
+        /**
+         * Creates a `.stack` property on `targetObject`, which when accessed returns
+         * a string representing the location in the code at which
+         * `Error.captureStackTrace()` was called.
+         *
+         * ```js
+         * const myObject = {};
+         * Error.captureStackTrace(myObject);
+         * myObject.stack;  // Similar to `new Error().stack`
+         * ```
+         *
+         * The first line of the trace will be prefixed with
+         * `${myObject.name}: ${myObject.message}`.
+         *
+         * The optional `constructorOpt` argument accepts a function. If given, all frames
+         * above `constructorOpt`, including `constructorOpt`, will be omitted from the
+         * generated stack trace.
+         *
+         * The `constructorOpt` argument is useful for hiding implementation
+         * details of error generation from the user. For instance:
+         *
+         * ```js
+         * function a() {
+         *   b();
+         * }
+         *
+         * function b() {
+         *   c();
+         * }
+         *
+         * function c() {
+         *   // Create an error without stack trace to avoid calculating the stack trace twice.
+         *   const { stackTraceLimit } = Error;
+         *   Error.stackTraceLimit = 0;
+         *   const error = new Error();
+         *   Error.stackTraceLimit = stackTraceLimit;
+         *
+         *   // Capture the stack trace above function b
+         *   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace
+         *   throw error;
+         * }
+         *
+         * a();
+         * ```
+         */
+        captureStackTrace(targetObject: object, constructorOpt?: Function): void;
+        /**
+         * @see https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+         */
+        prepareStackTrace(err: Error, stackTraces: NodeJS.CallSite[]): any;
+        /**
+         * The `Error.stackTraceLimit` property specifies the number of stack frames
+         * collected by a stack trace (whether generated by `new Error().stack` or
+         * `Error.captureStackTrace(obj)`).
+         *
+         * The default value is `10` but may be set to any valid JavaScript number. Changes
+         * will affect any stack trace captured _after_ the value has been changed.
+         *
+         * If set to a non-number value, or set to a negative number, stack traces will
+         * not capture any frames.
+         */
+        stackTraceLimit: number;
     }
 
-    // Debug: Check if API key is loaded
-    console.log('API Key loaded:', process.env.OPENROUTER_API_KEY ? 'YES' : 'NO');
-    console.log('Problem received:', problem);
+    /**
+     * Enable this API with the `--expose-gc` CLI flag.
+     */
+    var gc: NodeJS.GCFunction | undefined;
 
-    const completion = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free", // Using OpenRouter's GLM-4.5-AIR model
-      messages: [
-        {
-          role: "system",
-          content: `#Overview
-You are an smart AI excuse generator. Your job is to create a clever, clear and creative excuses that someone can use to avoid the situation they are in.
-
-##Output
--only return the excuse
--Add a touch of humour in it.`
-        },
-        {
-          role: "user",
-          content: problem
+    namespace NodeJS {
+        interface CallSite {
+            getColumnNumber(): number | null;
+            getEnclosingColumnNumber(): number | null;
+            getEnclosingLineNumber(): number | null;
+            getEvalOrigin(): string | undefined;
+            getFileName(): string | null;
+            getFunction(): Function | undefined;
+            getFunctionName(): string | null;
+            getLineNumber(): number | null;
+            getMethodName(): string | null;
+            getPosition(): number;
+            getPromiseIndex(): number | null;
+            getScriptHash(): string;
+            getScriptNameOrSourceURL(): string | null;
+            getThis(): unknown;
+            getTypeName(): string | null;
+            isAsync(): boolean;
+            isConstructor(): boolean;
+            isEval(): boolean;
+            isNative(): boolean;
+            isPromiseAll(): boolean;
+            isToplevel(): boolean;
         }
-      ],
-      max_tokens: 150,
-      temperature: 0.8
-    });
 
-    const excuse = completion.choices[0].message.content.trim();
-    console.log('Generated excuse:', excuse);
-    
-    res.json({ excuse });
-  } catch (error) {
-    console.error('Detailed error:', error);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
-    console.error('Error status:', error.status);
-    
-    // More specific error messages
-    if (error.code === 'invalid_api_key') {
-      res.status(500).json({ error: 'Invalid OpenRouter API key. Please check your API key.' });
-    } else if (error.code === 'insufficient_quota') {
-      res.status(500).json({ error: 'OpenRouter API quota exceeded. Please check your billing.' });
-    } else if (error.code === 'rate_limit_exceeded') {
-      res.status(500).json({ error: 'Rate limit exceeded. Please try again in a moment.' });
-    } else {
-      res.status(500).json({ error: `Failed to generate excuse: ${error.message}` });
+        interface ErrnoException extends Error {
+            errno?: number | undefined;
+            code?: string | undefined;
+            path?: string | undefined;
+            syscall?: string | undefined;
+        }
+
+        interface ReadableStream extends EventEmitter {
+            readable: boolean;
+            read(size?: number): string | Buffer;
+            setEncoding(encoding: BufferEncoding): this;
+            pause(): this;
+            resume(): this;
+            isPaused(): boolean;
+            pipe<T extends WritableStream>(destination: T, options?: { end?: boolean | undefined }): T;
+            unpipe(destination?: WritableStream): this;
+            unshift(chunk: string | Uint8Array, encoding?: BufferEncoding): void;
+            wrap(oldStream: ReadableStream): this;
+            [Symbol.asyncIterator](): AsyncIterableIterator<string | Buffer>;
+        }
+
+        interface WritableStream extends EventEmitter {
+            writable: boolean;
+            write(buffer: Uint8Array | string, cb?: (err?: Error | null) => void): boolean;
+            write(str: string, encoding?: BufferEncoding, cb?: (err?: Error | null) => void): boolean;
+            end(cb?: () => void): this;
+            end(data: string | Uint8Array, cb?: () => void): this;
+            end(str: string, encoding?: BufferEncoding, cb?: () => void): this;
+        }
+
+        interface ReadWriteStream extends ReadableStream, WritableStream {}
+
+        interface RefCounted {
+            ref(): this;
+            unref(): this;
+        }
+
+        interface Dict<T> {
+            [key: string]: T | undefined;
+        }
+
+        interface ReadOnlyDict<T> {
+            readonly [key: string]: T | undefined;
+        }
+
+        interface GCFunction {
+            (minor?: boolean): void;
+            (options: NodeJS.GCOptions & { execution: "async" }): Promise<void>;
+            (options: NodeJS.GCOptions): void;
+        }
+
+        interface GCOptions {
+            execution?: "sync" | "async" | undefined;
+            flavor?: "regular" | "last-resort" | undefined;
+            type?: "major-snapshot" | "major" | "minor" | undefined;
+            filename?: string | undefined;
+        }
+
+        /** An iterable iterator returned by the Node.js API. */
+        interface Iterator<T, TReturn = undefined, TNext = any> extends IteratorObject<T, TReturn, TNext> {
+            [Symbol.iterator](): NodeJS.Iterator<T, TReturn, TNext>;
+        }
+
+        /** An async iterable iterator returned by the Node.js API. */
+        interface AsyncIterator<T, TReturn = undefined, TNext = any> extends AsyncIteratorObject<T, TReturn, TNext> {
+            [Symbol.asyncIterator](): NodeJS.AsyncIterator<T, TReturn, TNext>;
+        }
     }
-  }
-});
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Excuses app is running!' });
-});
+    // Global DOM types
 
-// Test OpenRouter API endpoint
-app.get('/test-openrouter', async (req, res) => {
-  try {
-    console.log('Testing OpenRouter API...');
-    console.log('API Key:', process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing');
-    
-    const completion = await openai.chat.completions.create({
-      model: "z-ai/glm-4.5-air:free",
-      messages: [
-        {
-          role: "user",
-          content: "Say 'Hello World'"
-        }
-      ],
-      max_tokens: 10
-    });
+    interface DOMException extends _DOMException {}
+    var DOMException: typeof globalThis extends { onmessage: any; DOMException: infer T } ? T
+        : NodeDOMExceptionConstructor;
 
-    res.json({ 
-      success: true, 
-      message: completion.choices[0].message.content,
-      apiKeyStatus: process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing',
-      model: 'z-ai/glm-4.5-air:free'
-    });
-  } catch (error) {
-    console.error('OpenRouter Test Error:', error);
-    res.json({ 
-      success: false, 
-      error: error.message,
-      apiKeyStatus: process.env.OPENROUTER_API_KEY ? 'Present' : 'Missing',
-      model: 'z-ai/glm-4.5-air:free'
-    });
-  }
-});
+    // #region AbortController
+    interface AbortController {
+        readonly signal: AbortSignal;
+        abort(reason?: any): void;
+    }
+    var AbortController: typeof globalThis extends { onmessage: any; AbortController: infer T } ? T
+        : {
+            prototype: AbortController;
+            new(): AbortController;
+        };
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Environment check:');
-  console.log('- PORT:', process.env.PORT || 3000);
-  console.log('- OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
-  console.log('- Using model: z-ai/glm-4.5-air:free');
-}); 
+    interface AbortSignal extends EventTarget {
+        readonly aborted: boolean;
+        onabort: ((this: AbortSignal, ev: Event) => any) | null;
+        readonly reason: any;
+        throwIfAborted(): void;
+    }
+    var AbortSignal: typeof globalThis extends { onmessage: any; AbortSignal: infer T } ? T
+        : {
+            prototype: AbortSignal;
+            new(): AbortSignal;
+            abort(reason?: any): AbortSignal;
+            any(signals: AbortSignal[]): AbortSignal;
+            timeout(milliseconds: number): AbortSignal;
+        };
+    // #endregion AbortController
+
+    // #region Storage
+    interface Storage extends _Storage {}
+    // Conditional on `onabort` rather than `onmessage`, in order to exclude lib.webworker
+    var Storage: typeof globalThis extends { onabort: any; Storage: infer T } ? T
+        : {
+            prototype: Storage;
+            new(): Storage;
+        };
+
+    var localStorage: Storage;
+    var sessionStorage: Storage;
+    // #endregion Storage
+
+    // #region fetch
+    interface RequestInit extends _RequestInit {}
+
+    function fetch(
+        input: string | URL | globalThis.Request,
+        init?: RequestInit,
+    ): Promise<Response>;
+
+    interface Request extends _Request {}
+    var Request: typeof globalThis extends {
+        onmessage: any;
+        Request: infer T;
+    } ? T
+        : typeof import("undici-types").Request;
+
+    interface ResponseInit extends _ResponseInit {}
+
+    interface Response extends _Response {}
+    var Response: typeof globalThis extends {
+        onmessage: any;
+        Response: infer T;
+    } ? T
+        : typeof import("undici-types").Response;
+
+    interface FormData extends _FormData {}
+    var FormData: typeof globalThis extends {
+        onmessage: any;
+        FormData: infer T;
+    } ? T
+        : typeof import("undici-types").FormData;
+
+    interface Headers extends _Headers {}
+    var Headers: typeof globalThis extends {
+        onmessage: any;
+        Headers: infer T;
+    } ? T
+        : typeof import("undici-types").Headers;
+
+    interface MessageEvent extends _MessageEvent {}
+    var MessageEvent: typeof globalThis extends {
+        onmessage: any;
+        MessageEvent: infer T;
+    } ? T
+        : typeof import("undici-types").MessageEvent;
+
+    interface WebSocket extends _WebSocket {}
+    var WebSocket: typeof globalThis extends { onmessage: any; WebSocket: infer T } ? T
+        : typeof import("undici-types").WebSocket;
+
+    interface EventSource extends _EventSource {}
+    var EventSource: typeof globalThis extends { onmessage: any; EventSource: infer T } ? T
+        : typeof import("undici-types").EventSource;
+
+    interface CloseEvent extends _CloseEvent {}
+    var CloseEvent: typeof globalThis extends { onmessage: any; CloseEvent: infer T } ? T
+        : typeof import("undici-types").CloseEvent;
+    // #endregion fetch
+}
