@@ -26,6 +26,10 @@ app.post('/api/generate-excuse', async (req, res) => {
       return res.status(400).json({ error: 'Problem description is required' });
     }
 
+    // Debug: Check if API key is loaded
+    console.log('API Key loaded:', process.env.OPENAI_API_KEY ? 'YES' : 'NO');
+    console.log('Problem received:', problem);
+
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -48,11 +52,25 @@ You are an smart AI excuse generator. Your job is to create a clever, clear and 
     });
 
     const excuse = completion.choices[0].message.content.trim();
+    console.log('Generated excuse:', excuse);
     
     res.json({ excuse });
   } catch (error) {
-    console.error('Error generating excuse:', error);
-    res.status(500).json({ error: 'Failed to generate excuse' });
+    console.error('Detailed error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error status:', error.status);
+    
+    // More specific error messages
+    if (error.code === 'invalid_api_key') {
+      res.status(500).json({ error: 'Invalid OpenAI API key. Please check your API key.' });
+    } else if (error.code === 'insufficient_quota') {
+      res.status(500).json({ error: 'OpenAI API quota exceeded. Please check your billing.' });
+    } else if (error.code === 'rate_limit_exceeded') {
+      res.status(500).json({ error: 'Rate limit exceeded. Please try again in a moment.' });
+    } else {
+      res.status(500).json({ error: `Failed to generate excuse: ${error.message}` });
+    }
   }
 });
 
